@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kaizo Seed Generator</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --bg-soft: #161922;
+    --bg-card: #1c2030;
+    --bg-row-hover: #232838;
+    --bg-expand: #11141c;
+    --border: #2a3042;
+    --border-strong: #3a4056;
+    --text: #e8eaf0;
+    --text-muted: #8b91a3;
+    --text-dim: #5e6478;
+    --accent: #7c5cff;
+    --accent-soft: #2a2347;
+    --accent-text: #b8a8ff;
+    --good: #4ade80;
+    --warn: #fbbf24;
+    --danger: #f87171;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .header .live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--good);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+    vertical-align: middle;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Buttons */
+  .btn {
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .btn:hover {
+    background: var(--bg-row-hover);
+    border-color: var(--border-strong);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: #6b4ce0;
+    border-color: #6b4ce0;
+  }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Stat cards */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .stat-accent { color: var(--accent-text); }
+
+  /* Filter bar */
+  .filters {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .filter-group label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .filter-group input[type=range] {
+    width: 120px;
+    accent-color: var(--accent);
+  }
+  .filter-group .readout {
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 40px;
+    color: var(--text);
+  }
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .checkbox-label input {
+    accent-color: var(--accent);
+  }
+
+  /* Table */
+  .table-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .thead, .row-main {
+    display: grid;
+    grid-template-columns: 130px 1fr 100px 90px 90px 80px 50px;
+    gap: 12px;
+    padding: 14px 18px;
+    align-items: center;
+  }
+  .thead {
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .thead > div { cursor: pointer; user-select: none; transition: color 0.15s; }
+  .thead > div:hover { color: var(--text); }
+  .row {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .row:last-child { border-bottom: none; }
+  .row-main {
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .row-main:hover { background: var(--bg-row-hover); }
+  .seed-id {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .starter-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bst-tag {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+  .num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+  .num-strong { font-weight: 600; color: var(--text); }
+  .carry-pos { color: var(--accent-text); font-weight: 600; }
+  .carry-zero { color: var(--text-dim); }
+  .chevron {
+    text-align: right;
+    color: var(--text-dim);
+    font-size: 12px;
+    transition: transform 0.15s;
+  }
+  .row.expanded .chevron { color: var(--accent-text); }
+
+  /* Pills */
+  .pill {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pill-good {
+    background: rgba(74, 222, 128, 0.12);
+    color: var(--good);
+  }
+
+  /* Expanded view */
+  .expand {
+    background: var(--bg-expand);
+    padding: 16px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .area-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .area-card:last-of-type { margin-bottom: 14px; }
+  .area-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .area-name { font-weight: 600; }
+  .area-meta { color: var(--text-muted); font-size: 12px; }
+  .mon-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 60px;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13px;
+    align-items: center;
+  }
+  .mon-row + .mon-row { border-top: 1px solid var(--border); }
+  .mon-name { display: flex; align-items: center; gap: 8px; }
+  .mon-stat { text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+  .empty {
+    padding: 48px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .footer-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 14px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .thead, .row-main { grid-template-columns: 90px 1fr 70px 50px 60px 40px 24px; gap: 8px; font-size: 12px; }
+    .wrap { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h1>Kaizo seed generator</h1>
+      <p><span class="live-dot"></span>Auto-scanning · <strong id="hdr-scanned">1,247</strong> seeds processed · <strong id="hdr-keepers">18</strong> keepers</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="pause-btn">Pause</button>
+      <button class="btn btn-primary">Export keepers</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <p class="stat-label">Seeds scanned</p>
+      <p class="stat-value">1,247</p>
+    </div>
+    <div class="stat">
+      <p class="stat-label">Keepers</p>
+      <p class="stat-value">18</p>
+    </div>
+    <div class="stat">
+      <p class="stat-label">Carry hits</p>
+      <p class="stat-value">7</p>
+    </div>
+    <div class="stat">
+      <p class="stat-label">Top score</p>
+      <p class="stat-value stat-accent">1,612</p>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>Min score</label>
+      <input type="range" min="0" max="2000" value="500" id="min-score" />
+      <span class="readout" id="min-score-out">500</span>
+    </div>
+    <div class="filter-group">
+      <label>Min floor</label>
+      <input type="range" min="0" max="600" value="100" id="min-floor" />
+      <span class="readout" id="min-floor-out">100</span>
+    </div>
+    <label class="checkbox-label">
+      <input type="checkbox" id="carry-only" /> Carry hits only
+    </label>
+    <label class="checkbox-label">
+      <input type="checkbox" id="starter-carry" /> Starter must be carry
+    </label>
+  </div>
+
+  <div class="table-wrap">
+    <div class="thead" id="thead">
+      <div data-sort="id">Seed</div>
+      <div data-sort="starter">Starter</div>
+      <div data-sort="score" class="num-cell">Score ↓</div>
+      <div data-sort="count" class="num-cell">Good</div>
+      <div data-sort="floor" class="num-cell">Floor</div>
+      <div data-sort="carry" class="num-cell">Carry</div>
+      <div></div>
+    </div>
+    <div id="tbody"></div>
+  </div>
+
+  <p class="footer-note">Click a column header to sort · Click a row to expand details</p>
+</div>
+
+<script>
+const seeds = [
+  {id:"0xA42F19B", starter:"Totodile", starterBst:314, starterCarry:false, score:1612, count:9, floor:412, carry:2,
+    areas:[
+      {name:"Route 19", score:660, count:2, mons:[["Garchomp",600,50,true],["Salamence",600,50,true]]},
+      {name:"Route 20", score:540, count:4, mons:[["Dragonite",600,30,true],["Hydreigon",600,25,true],["Tyranitar",600,20,true],["Metagross",600,15,true],["Spinda",360,10,false]]},
+      {name:"Floccesy Ranch", score:412, count:3, mons:[["Gyarados",540,40,false],["Aerodactyl",515,30,false],["Lapras",535,20,false],["Tauros",490,10,false]]}
+    ]},
+  {id:"0xC81D33A", starter:"Azumarill", starterBst:420, starterCarry:true, score:1389, count:6, floor:298, carry:1,
+    areas:[
+      {name:"Route 19", score:498, count:2, mons:[["Conkeldurr",505,45,false],["Hitmontop",455,35,false],["Rattata",253,20,false]]},
+      {name:"Route 20", score:593, count:3, mons:[["Garchomp",600,40,true],["Excadrill",508,30,false],["Mienshao",510,20,false],["Cascoon",205,10,false]]},
+      {name:"Floccesy Ranch", score:298, count:1, mons:[["Sigilyph",490,30,false],["Misdreavus",435,25,false],["Pidgey",251,25,false],["Bidoof",250,20,false]]}
+    ]},
+  {id:"0xF02B47C", starter:"Charmander", starterBst:309, starterCarry:false, score:1247, count:7, floor:241, carry:1,
+    areas:[
+      {name:"Route 19", score:512, count:3, mons:[["Heracross",500,40,false],["Scizor",500,30,false],["Gallade",518,20,false],["Spinda",360,10,false]]},
+      {name:"Route 20", score:494, count:3, mons:[["Volcarona",550,35,false],["Chandelure",520,30,false],["Crobat",535,20,false],["Rattata",253,15,false]]},
+      {name:"Floccesy Ranch", score:241, count:1, mons:[["Whimsicott",480,30,true],["Audino",445,25,false],["Bidoof",250,25,false],["Pidgey",251,20,false]]}
+    ]},
+  {id:"0x7B19E2D", starter:"Bulbasaur", starterBst:318, starterCarry:false, score:1098, count:5, floor:312, carry:0,
+    areas:[
+      {name:"Route 19", score:312, count:1, mons:[["Lucario",525,30,false],["Spinda",360,30,false],["Pidgey",251,25,false],["Rattata",253,15,false]]},
+      {name:"Route 20", score:445, count:2, mons:[["Salamence",600,30,false],["Flygon",520,25,false],["Tropius",460,25,false],["Cascoon",205,20,false]]},
+      {name:"Floccesy Ranch", score:341, count:2, mons:[["Mamoswine",530,35,false],["Donphan",500,25,false],["Bidoof",250,25,false],["Pidgey",251,15,false]]}
+    ]},
+  {id:"0xD55A801", starter:"Mudkip", starterBst:310, starterCarry:false, score:987, count:6, floor:188, carry:0,
+    areas:[
+      {name:"Route 19", score:412, count:3, mons:[["Mienshao",510,35,false],["Toxicroak",490,30,false],["Krookodile",519,20,false],["Pidgey",251,15,false]]},
+      {name:"Route 20", score:387, count:2, mons:[["Hippowdon",525,30,false],["Garbodor",474,30,false],["Stantler",465,25,false],["Spinda",360,15,false]]},
+      {name:"Floccesy Ranch", score:188, count:1, mons:[["Espeon",525,25,false],["Bidoof",250,40,false],["Pidgey",251,20,false],["Rattata",253,15,false]]}
+    ]},
+  {id:"0x3F90C5E", starter:"Gible", starterBst:300, starterCarry:true, score:912, count:4, floor:201, carry:1,
+    areas:[
+      {name:"Route 19", score:201, count:1, mons:[["Aggron",530,20,false],["Pidgey",251,40,false],["Rattata",253,25,false],["Bidoof",250,15,false]]},
+      {name:"Route 20", score:412, count:2, mons:[["Tyranitar",600,30,true],["Garchomp",600,15,true],["Vanilluxe",535,30,false],["Cascoon",205,25,false]]},
+      {name:"Floccesy Ranch", score:299, count:1, mons:[["Snorlax",540,30,false],["Bibarel",410,30,false],["Pidgey",251,25,false],["Bidoof",250,15,false]]}
+    ]},
+  {id:"0x8E2F71B", starter:"Treecko", starterBst:310, starterCarry:false, score:854, count:5, floor:155, carry:0,
+    areas:[
+      {name:"Route 19", score:412, count:2, mons:[["Gallade",518,40,false],["Hitmonlee",455,30,false],["Spinda",360,20,false],["Bidoof",250,10,false]]},
+      {name:"Route 20", score:287, count:2, mons:[["Aerodactyl",515,25,false],["Skarmory",465,30,false],["Pidgey",251,30,false],["Rattata",253,15,false]]},
+      {name:"Floccesy Ranch", score:155, count:1, mons:[["Crawdaunt",468,25,false],["Surskit",269,40,false],["Pidgey",251,20,false],["Bidoof",250,15,false]]}
+    ]}
+];
+
+let sortKey = "score";
+let sortDir = -1;
+const expanded = new Set();
+let paused = false;
+
+function fmt(n) { return Math.round(n).toLocaleString(); }
+
+function monRow(m) {
+  const [name, bst, rate, isCarry] = m;
+  const carryMark = isCarry ? '<span class="pill">carry</span>' : '';
+  return `<div class="mon-row">
+    <span class="mon-name">${name} ${carryMark}</span>
+    <span class="mon-stat">${bst} BST</span>
+    <span class="mon-stat">${rate}%</span>
+  </div>`;
+}
+
+function areaCard(a) {
+  return `<div class="area-card">
+    <div class="area-head">
+      <span class="area-name">${a.name}</span>
+      <span class="area-meta">score ${fmt(a.score)} · ${a.count} good</span>
+    </div>
+    ${a.mons.map(monRow).join("")}
+  </div>`;
+}
+
+function expandedView(s) {
+  return `<div class="expand">
+    ${s.areas.map(areaCard).join("")}
+    <div class="btn-row">
+      <button class="btn" onclick="event.stopPropagation();alert('Detailed analysis for ${s.id}')">Analyze</button>
+      <button class="btn" onclick="event.stopPropagation();alert('Favorited ${s.id}')">Favorite</button>
+    </div>
+  </div>`;
+}
+
+function row(s) {
+  const isExp = expanded.has(s.id);
+  const carryBadge = s.starterCarry ? '<span class="pill">carry</span>' : '';
+  const carryHits = s.carry > 0
+    ? `<span class="carry-pos">${s.carry}</span>`
+    : `<span class="carry-zero">0</span>`;
+  return `<div class="row ${isExp ? "expanded" : ""}" data-id="${s.id}">
+    <div class="row-main">
+      <div class="seed-id">${s.id}</div>
+      <div class="starter-cell">${s.starter} <span class="bst-tag">${s.starterBst}</span> ${carryBadge}</div>
+      <div class="num-cell num-strong">${fmt(s.score)}</div>
+      <div class="num-cell">${s.count}</div>
+      <div class="num-cell">${fmt(s.floor)}</div>
+      <div class="num-cell">${carryHits}</div>
+      <div class="chevron">${isExp ? "▾" : "▸"}</div>
+    </div>
+    ${isExp ? expandedView(s) : ""}
+  </div>`;
+}
+
+function getFiltered() {
+  const minScore = +document.getElementById("min-score").value;
+  const minFloor = +document.getElementById("min-floor").value;
+  const carryOnly = document.getElementById("carry-only").checked;
+  const starterCarry = document.getElementById("starter-carry").checked;
+  return seeds.filter(s => {
+    if (s.score < minScore) return false;
+    if (s.floor < minFloor) return false;
+    if (carryOnly && s.carry === 0) return false;
+    if (starterCarry && !s.starterCarry) return false;
+    return true;
+  });
+}
+
+function render() {
+  const filtered = getFiltered();
+  const sortMap = { id: "id", starter: "starter", score: "score", count: "count", floor: "floor", carry: "carry" };
+  const k = sortMap[sortKey];
+  filtered.sort((a, b) => {
+    const av = a[k], bv = b[k];
+    if (typeof av === "string") return sortDir * av.localeCompare(bv);
+    return sortDir * (av - bv);
+  });
+  const tbody = document.getElementById("tbody");
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<div class="empty">No seeds match these filters</div>';
+  } else {
+    tbody.innerHTML = filtered.map(row).join("");
+  }
+  document.querySelectorAll(".row-main").forEach(el => {
+    el.addEventListener("click", () => {
+      const id = el.parentElement.dataset.id;
+      if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+      render();
+    });
+  });
+  // sort indicators
+  document.querySelectorAll("#thead [data-sort]").forEach(el => {
+    const key = el.dataset.sort;
+    let label = el.textContent.replace(/\s*[↓↑]\s*$/, "").trim();
+    if (key === sortKey) label += sortDir < 0 ? " ↓" : " ↑";
+    el.textContent = label;
+  });
+}
+
+document.getElementById("min-score").addEventListener("input", e => {
+  document.getElementById("min-score-out").textContent = e.target.value;
+  render();
+});
+document.getElementById("min-floor").addEventListener("input", e => {
+  document.getElementById("min-floor-out").textContent = e.target.value;
+  render();
+});
+document.getElementById("carry-only").addEventListener("change", render);
+document.getElementById("starter-carry").addEventListener("change", render);
+document.querySelectorAll("#thead [data-sort]").forEach(el => {
+  el.addEventListener("click", () => {
+    const key = el.dataset.sort;
+    if (sortKey === key) sortDir = -sortDir;
+    else { sortKey = key; sortDir = -1; }
+    render();
+  });
+});
+
+document.getElementById("pause-btn").addEventListener("click", (e) => {
+  paused = !paused;
+  e.target.textContent = paused ? "Resume" : "Pause";
+  document.querySelector(".live-dot").style.animationPlayState = paused ? "paused" : "running";
+  document.querySelector(".live-dot").style.background = paused ? "var(--warn)" : "var(--good)";
+});
+
+render();
+</script>
+</body>
+</html>
