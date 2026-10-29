@@ -384,6 +384,8 @@
 </div>
 
 <script>
+// hardcoded sample data, nothing is generated yet
+// each mon is [name, bst, encounter rate %, isCarry]
 const seeds = [
   {id:"0xA42F19B", starter:"Totodile", starterBst:314, starterCarry:false, score:1612, count:9, floor:412, carry:2,
     areas:[
@@ -550,6 +552,7 @@ document.querySelectorAll("#thead [data-sort]").forEach(el => {
   });
 });
 
+// visual only: there's no scan loop to pause
 document.getElementById("pause-btn").addEventListener("click", (e) => {
   paused = !paused;
   e.target.textContent = paused ? "Resume" : "Pause";
